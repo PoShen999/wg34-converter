@@ -6,6 +6,12 @@
 
 <title>WG34 ↔ Code128C 換算工具</title>
 
+<meta name="theme-color" content="#1976d2">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-title" content="WG34">
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
@@ -35,8 +41,11 @@ td{
 }
 
 input{
-    width:250px;
-    padding:8px;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    font-size:18px;
 }
 
 button{
@@ -56,8 +65,37 @@ button{
 
 <body>
 
-<h1>WG34 ↔ Code128C 換算工具</h1>
+<h1 style="
+text-align:center;
+margin-bottom:15px;
+">
 
+WG34 ↔ Code128C 換算工具
+
+</h1>
+<div id="installArea">
+
+<button
+id="installBtn"
+style="
+display:none;
+width:100%;
+padding:12px;
+font-size:18px;
+background:#1976d2;
+color:white;
+border:none;
+border-radius:8px;
+margin-bottom:10px;
+">
+
+📱 安裝 WG34 APP
+
+</button>
+
+<div id="iosTip"></div>
+
+</div>
 <div class="card">
 
 <h2>卡片轉條碼 (WG34 → Code128C)</h2>
@@ -166,11 +204,14 @@ Code128C：
 
 function wgToCode(){
 
-    let wg =
-    document
-    .getElementById("wg34")
-    .value
-    .trim();
+let wg =
+document
+.getElementById("wg34")
+.value
+.trim();
+
+wg =
+wg.replace(/-/g,'');
 
     if(wg === ""){
 
@@ -298,7 +339,10 @@ function clearAll(){
     document.getElementById("card2").innerHTML="";
     document.getElementById("wg2").innerHTML="";
 
-    document.getElementById("barcode").innerHTML="";
+document
+.getElementById("barcode")
+.replaceChildren();
+
 }
 
 function downloadBarcode(){
@@ -379,7 +423,68 @@ function printBarcode(){
 
     w.document.close();
 }
+//
+// 安裝APP
+//
 
+let deferredPrompt;
+
+window.addEventListener(
+'beforeinstallprompt',
+(e)=>{
+
+    e.preventDefault();
+
+    deferredPrompt = e;
+
+    document
+    .getElementById('installBtn')
+    .style.display='block';
+
+});
+
+document
+.getElementById('installBtn')
+.addEventListener(
+'click',
+async ()=>{
+
+    if(!deferredPrompt)
+        return;
+
+    deferredPrompt.prompt();
+
+    await deferredPrompt.userChoice;
+
+});
+if(
+/iPhone|iPad|iPod/i
+.test(
+navigator.userAgent
+)
+){
+
+document
+.getElementById('iosTip')
+.innerHTML =
+
+`
+<div style="
+padding:12px;
+margin-top:10px;
+background:#fff3cd;
+border-radius:8px;
+">
+
+🍎 iPhone 使用者：
+
+Safari → 分享 →
+加入主畫面
+
+</div>
+`;
+
+}
 </script>
 
 </body>

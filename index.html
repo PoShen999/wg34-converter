@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>WG34 ↔ Code128C 換算工具</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+<style>
+
+body{
+    font-family:"Microsoft JhengHei",Arial;
+    margin:20px;
+    background:#f5f5f5;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+    margin-bottom:20px;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+
+td{
+    border:1px solid #ddd;
+    padding:8px;
+}
+
+input{
+    width:250px;
+    padding:8px;
+}
+
+button{
+    padding:8px 15px;
+    margin:3px;
+    cursor:pointer;
+}
+
+.barcode-box{
+    text-align:center;
+    margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>WG34 ↔ Code128C 換算工具</h1>
+
+<div class="card">
+
+<h2>卡片轉條碼 (WG34 → Code128C)</h2>
+
+WG34：
+
+<input id="wg34" placeholder="例如 5576707299">
+
+<button onclick="wgToCode()">換算</button>
+
+<button onclick="clearAll()">清除</button>
+
+<table>
+
+<tr>
+<td>SiteCode</td>
+<td id="site1"></td>
+</tr>
+
+<tr>
+<td>CardCode</td>
+<td id="card1"></td>
+</tr>
+
+<tr>
+<td>HEX</td>
+<td id="hex1"></td>
+</tr>
+
+<tr>
+<td>Code128C</td>
+<td id="code1"></td>
+</tr>
+
+</table>
+
+<div class="barcode-box">
+
+<svg id="barcode"></svg>
+
+<br>
+
+<button onclick="downloadBarcode()">
+
+下載PNG
+
+</button>
+
+<button onclick="printBarcode()">
+
+列印條碼
+
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>條碼推卡號 (Code128C → WG34)</h2>
+
+Code128C：
+
+<input id="code128" placeholder="例如 3654753411">
+
+<button onclick="codeToWG()">
+
+換算
+
+</button>
+
+<button onclick="clearAll()">
+
+清除
+
+</button>
+
+<table>
+
+<tr>
+<td>HEX</td>
+<td id="hex2"></td>
+</tr>
+
+<tr>
+<td>SiteCode</td>
+<td id="site2"></td>
+</tr>
+
+<tr>
+<td>CardCode</td>
+<td id="card2"></td>
+</tr>
+
+<tr>
+<td>WG34</td>
+<td id="wg2"></td>
+</tr>
+
+</table>
+
+</div>
+
+<script>
+
+function wgToCode(){
+
+    let wg =
+    document
+    .getElementById("wg34")
+    .value
+    .trim();
+
+    if(wg === ""){
+
+        alert("請輸入WG34");
+
+        return;
+    }
+
+    let site =
+        wg.substring(0,5);
+
+    let card =
+        wg.substring(5);
+
+    let siteHex =
+        parseInt(site)
+        .toString(16)
+        .toUpperCase()
+        .padStart(4,"0");
+
+    let cardHex =
+        parseInt(card)
+        .toString(16)
+        .toUpperCase()
+        .padStart(4,"0");
+
+    let hex =
+        siteHex +
+        cardHex;
+
+    let dec =
+        parseInt(hex,16);
+
+    document.getElementById("site1").innerHTML =
+        site;
+
+    document.getElementById("card1").innerHTML =
+        card.padStart(5,"0");
+
+    document.getElementById("hex1").innerHTML =
+        hex;
+
+    document.getElementById("code1").innerHTML =
+        dec;
+
+    JsBarcode(
+        "#barcode",
+        String(dec),
+        {
+            format:"CODE128",
+            lineColor:"#000",
+            width:2,
+            height:80,
+            displayValue:true
+        }
+    );
+}
+
+function codeToWG(){
+
+    let code =
+        document
+        .getElementById("code128")
+        .value
+        .trim();
+
+    if(code===""){
+
+        alert("請輸入Code128C");
+
+        return;
+    }
+
+    let hex =
+        Number(code)
+        .toString(16)
+        .toUpperCase()
+        .padStart(8,"0");
+
+    let site =
+        parseInt(
+            hex.substring(0,4),
+            16
+        );
+
+    let card =
+        parseInt(
+            hex.substring(4,8),
+            16
+        );
+
+    let wg =
+        String(site)
+        .padStart(5,"0")
+        +
+        String(card)
+        .padStart(5,"0");
+
+    document.getElementById("hex2").innerHTML =
+        hex;
+
+    document.getElementById("site2").innerHTML =
+        site;
+
+    document.getElementById("card2").innerHTML =
+        String(card)
+        .padStart(5,"0");
+
+    document.getElementById("wg2").innerHTML =
+        wg;
+}
+
+function clearAll(){
+
+    document.getElementById("wg34").value="";
+    document.getElementById("code128").value="";
+
+    document.getElementById("site1").innerHTML="";
+    document.getElementById("card1").innerHTML="";
+    document.getElementById("hex1").innerHTML="";
+    document.getElementById("code1").innerHTML="";
+
+    document.getElementById("hex2").innerHTML="";
+    document.getElementById("site2").innerHTML="";
+    document.getElementById("card2").innerHTML="";
+    document.getElementById("wg2").innerHTML="";
+
+    document.getElementById("barcode").innerHTML="";
+}
+
+function downloadBarcode(){
+
+    let svg =
+    document.getElementById("barcode");
+
+    let data =
+    new XMLSerializer()
+    .serializeToString(svg);
+
+    let canvas =
+    document.createElement("canvas");
+
+    let ctx =
+    canvas.getContext("2d");
+
+    let img =
+    new Image();
+
+    img.onload = function(){
+
+        canvas.width =
+        img.width;
+
+        canvas.height =
+        img.height;
+
+        ctx.drawImage(
+            img,
+            0,
+            0
+        );
+
+        let a =
+        document.createElement("a");
+
+        a.download =
+        "Code128.png";
+
+        a.href =
+        canvas.toDataURL(
+            "image/png"
+        );
+
+        a.click();
+    };
+
+    img.src =
+    "data:image/svg+xml;base64,"
+    +
+    btoa(data);
+}
+
+function printBarcode(){
+
+    let svg =
+    document
+    .getElementById("barcode")
+    .outerHTML;
+
+    let w =
+    window.open("");
+
+    w.document.write(
+    `
+    <html>
+    <body style="text-align:center;">
+    ${svg}
+    <script>
+    window.print();
+    window.onafterprint=()=>window.close();
+    <\/script>
+    </body>
+    </html>
+    `
+    );
+
+    w.document.close();
+}
+
+</script>
+
+</body>
+</html>

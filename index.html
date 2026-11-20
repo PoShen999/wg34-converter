@@ -187,13 +187,17 @@ function wgToCode(){
     wg =
     wg.replace(/-/g,'');
 
-    if(!/^\d{10}$/.test(wg)){
+if(!/^\d{10}$/.test(wg)){
 
-        alert("WG34 必須為 10 碼數字，例如：5576707299");
+    alert(
+        "WG34 格式錯誤\n\n" +
+        "範例：5576707299\n" +
+        "或：55767-07299"
+    );
 
-        return;
+    return;
 
-    }
+}
 
     let site =
         wg.substring(0,5);
